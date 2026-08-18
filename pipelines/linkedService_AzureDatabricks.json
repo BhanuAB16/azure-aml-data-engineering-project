@@ -1,0 +1,12 @@
+{
+  "name": "AzureDatabricks_LinkedService",
+  "properties": {
+    "type": "AzureDatabricks",
+    "typeProperties": {
+      "domain": "https://<databricks-workspace-url>",
+      "authentication": "MSI",
+      "workspaceResourceId": "<databricks-workspace-resource-id>",
+      "existingClusterId": "<cluster-id-or-use-newClusterNodeType-for-job-clusters>"
+    }
+  }
+}

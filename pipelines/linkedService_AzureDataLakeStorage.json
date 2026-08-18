@@ -1,0 +1,11 @@
+{
+  "name": "AzureDataLakeStorage_LinkedService",
+  "properties": {
+    "type": "AzureBlobFS",
+    "typeProperties": {
+      "url": "https://<storage_account_name>.dfs.core.windows.net"
+    },
+    "annotations": [],
+    "connectVia": null
+  }
+}

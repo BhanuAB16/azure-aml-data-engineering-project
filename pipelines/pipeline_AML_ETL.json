@@ -1,0 +1,53 @@
+{
+  "name": "AML_Medallion_ETL",
+  "properties": {
+    "description": "Orchestrates bronze -> silver -> gold -> model-train for the IBM AML dataset via Databricks notebooks.",
+    "parameters": {
+      "storage_account": { "type": "string" },
+      "dataset_variant": { "type": "string", "defaultValue": "HI-Small" }
+    },
+    "activities": [
+      {
+        "name": "Bronze_to_Silver",
+        "type": "DatabricksNotebook",
+        "typeProperties": {
+          "notebookPath": "/Repos/aml-data-engineering/notebooks/01_bronze_to_silver",
+          "baseParameters": {
+            "storage_account": "@pipeline().parameters.storage_account",
+            "variant": "@pipeline().parameters.dataset_variant"
+          }
+        },
+        "linkedServiceName": { "referenceName": "AzureDatabricks_LinkedService", "type": "LinkedServiceReference" }
+      },
+      {
+        "name": "Silver_to_Gold",
+        "type": "DatabricksNotebook",
+        "dependsOn": [
+          { "activity": "Bronze_to_Silver", "dependencyConditions": ["Succeeded"] }
+        ],
+        "typeProperties": {
+          "notebookPath": "/Repos/aml-data-engineering/notebooks/02_silver_to_gold",
+          "baseParameters": {
+            "storage_account": "@pipeline().parameters.storage_account"
+          }
+        },
+        "linkedServiceName": { "referenceName": "AzureDatabricks_LinkedService", "type": "LinkedServiceReference" }
+      },
+      {
+        "name": "Train_AML_Model",
+        "type": "DatabricksNotebook",
+        "dependsOn": [
+          { "activity": "Silver_to_Gold", "dependencyConditions": ["Succeeded"] }
+        ],
+        "typeProperties": {
+          "notebookPath": "/Repos/aml-data-engineering/notebooks/03_train_aml_model",
+          "baseParameters": {
+            "storage_account": "@pipeline().parameters.storage_account"
+          }
+        },
+        "linkedServiceName": { "referenceName": "AzureDatabricks_LinkedService", "type": "LinkedServiceReference" }
+      }
+    ],
+    "annotations": ["aml", "medallion", "ibm-aml-dataset"]
+  }
+}
