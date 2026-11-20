@@ -49,7 +49,7 @@ renamed = raw.toDF(*COLUMN_ORDER)
 # COMMAND ----------
 
 cleaned = (
-    renamed.withColumn("txn_timestamp", F.to_timestamp("txn_timestamp"))
+    renamed.withColumn("txn_timestamp", F.to_timestamp("txn_timestamp", "yyyy/MM/dd HH:mm"))
     .withColumn("amount_paid", F.col("amount_paid").cast(DoubleType()))
     .withColumn("amount_received", F.col("amount_received").cast(DoubleType()))
     .withColumn("is_laundering", F.col("is_laundering").cast("int"))
@@ -69,6 +69,7 @@ print(f"Bronze rows: {raw.count():,}  ->  Silver rows: {cleaned.count():,}")
     .save(silver_path)
 )
 
+spark.sql("CREATE SCHEMA IF NOT EXISTS aml_silver")
 spark.sql(
     f"""
     CREATE TABLE IF NOT EXISTS aml_silver.transactions

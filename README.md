@@ -122,9 +122,33 @@ A generated SQL admin password is already stored in Key Vault as secret
 `sql-admin-password` (login: `amladmin`) for whenever the SQL database is
 added.
 
+### Pipeline run results (2026-08-18)
+
+All three notebooks in `/Shared/aml-data-engineering` ran end to end on
+Databricks (Runtime 16.4 ML, single node):
+
+- Bronze → silver → gold completed on the full 5,078,345-row HI-Small file.
+- GBT classifier test metrics (MLflow experiment `03_train_aml_model`):
+  **AUROC 0.921, AUPRC 0.031**.
+
+AUPRC is the metric that matters here: only about 0.1% of transactions are
+labelled as laundering, so a random model scores roughly 0.001. The model is
+well above that baseline but weak in absolute terms. Next modelling steps are
+class weighting or resampling, plus graph features on the account network.
+
+Model artifact logging is best-effort (`mlflowdbfs` isn't usable under Unity
+Catalog on this workspace), so only metrics are persisted, not the model.
+
+### Lessons from deployment
+
+- Databricks cluster launches hit repeated `CLOUD_PROVIDER_RESOURCE_STOCKOUT`
+  errors in East US 2; setting `driver_node_type_flexibility` with a fallback
+  list of compatible node types fixed it.
+- ADLS access uses an Access Connector + Unity Catalog storage credential and
+  external locations (`amldataeng-bronze/silver/gold`), not account keys.
+
 ### Next steps
-1. Run `notebooks/01_bronze_to_silver.py` etc. in the Databricks workspace
-   against storage account `amldataengsthggybkyupgur` (see `docs/notebooks.md`).
+1. Improve the model (imbalance handling, graph features).
 2. Optionally import the ADF pipeline in `pipelines/` to orchestrate it.
 3. Optionally request a SQL quota increase and redeploy with
    `deploySqlDatabase=true` for a dedicated serving layer.

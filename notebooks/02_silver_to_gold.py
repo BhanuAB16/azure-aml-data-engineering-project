@@ -77,6 +77,7 @@ account_features = outgoing.join(incoming, on=["account", "txn_date"], how="full
     .save(gold_account_path)
 )
 
+spark.sql("CREATE SCHEMA IF NOT EXISTS aml_gold")
 spark.sql(f"CREATE TABLE IF NOT EXISTS aml_gold.transactions_features USING DELTA LOCATION '{gold_txn_path}'")
 spark.sql(f"CREATE TABLE IF NOT EXISTS aml_gold.account_features USING DELTA LOCATION '{gold_account_path}'")
 

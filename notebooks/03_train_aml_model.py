@@ -48,7 +48,7 @@ pipeline = Pipeline(stages=indexers + [assembler, gbt])
 
 # COMMAND ----------
 
-mlflow.pyspark.ml.autolog()
+mlflow.pyspark.ml.autolog(log_models=False)
 
 with mlflow.start_run(run_name="aml-gbt-classifier"):
     model = pipeline.fit(train_df)
@@ -64,7 +64,10 @@ with mlflow.start_run(run_name="aml-gbt-classifier"):
     print(f"Test AUPRC: {auprc:.4f}")
     print(f"Test AUROC: {auroc:.4f}")
 
-    mlflow.spark.log_model(model, "model")
+    try:
+        mlflow.spark.log_model(model, "model")
+    except Exception as e:
+        print(f"Model artifact logging skipped (non-fatal): {e}")
 
 # COMMAND ----------
 
